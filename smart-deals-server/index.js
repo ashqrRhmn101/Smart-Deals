@@ -30,10 +30,20 @@ async function run() {
 
     const db = client.db("smart_db");
     const productCollection = db.collection("products");
+    const bidsCollection = db.collection("bids"); // create BIDS and catch It's
 
     // Get => Find all Products
     app.get("/products", async (req, res) => {
-      const cursor = productCollection.find();
+      //     const projectFields = {title: 1, price_min: 1, seller_contact: 1}
+      //   const cursor = productCollection.find().sort({price_min: 1}).skip(2).limit(5).project(projectFields);
+      console.log(req.query);
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+
+      const cursor = productCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -46,7 +56,7 @@ async function run() {
       res.send(result);
     });
 
-    // Post
+    // Post => create products
     app.post("/products", async (req, res) => {
       const newProduct = req.body;
       const result = await productCollection.insertOne(newProduct);
@@ -73,6 +83,34 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // bids related apis
+    app.get("/bids", async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.buyer_email = email;
+      }
+
+      const cursor = bidsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // create bids by POST
+    app.post("/bids", async (req, res) => {
+      const newBid = req.body;
+      const result = await bidsCollection.insertOne(newBid);
+      res.send(result);
+    });
+
+    // delete bids
+    app.delete("/bids/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bidsCollection.deleteOne(query);
       res.send(result);
     });
 
