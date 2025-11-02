@@ -48,11 +48,19 @@ async function run() {
       res.send(result);
     });
 
+    // Latest Products
+    app.get("/latest-products", async (req, res) => {
+      const cursor = productCollection.find().sort({ created_at: -1 }).limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // Get => find a single product
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await productCollection.findOne(query);
+      // const query = { _id: new ObjectId(id) };
+      // const result = await productCollection.findOne(query);
+      const result = await productCollection.findOne({_id: id});
       res.send(result);
     });
 
