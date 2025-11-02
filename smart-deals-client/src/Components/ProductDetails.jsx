@@ -1,28 +1,61 @@
-import React, { use, useRef } from "react";
+import React, { useRef } from "react";
 import { useLoaderData, Link } from "react-router";
+import { useContext } from "react";
 import { AuthContext } from "../Provider/AuthProvider";
+import Swal from "sweetalert2";
 
 const ProductDetails = () => {
   const product = useLoaderData();
   const bidModalRef = useRef(null);
-  const {user} = use(AuthContext)
-  console.log(user.email)
+  const { user } = useContext(AuthContext);
 
   const handleBidModalOpen = () => {
     bidModalRef.current.showModal();
   };
 
-//   Handle Submit
-const handleSubmit = () =>{
+  // Handle Submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const bid = e.target.bid.value;
+    console.log(_id, name, email, bid);
+    // bidModalRef.current.close(); // Submit হলে modal close
 
-}
+    const newBid = {
+      product: _id,
+      buyer_name: name,
+      buyer_email: email,
+      bid_price: bid,
+      status: "pending",
+    };
+
+    fetch("http://localhost:3000/bids", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(newBid),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.insertedId) {
+          bidModalRef.current.close();
+          Swal.fire({
+            title: "Drag me!",
+            icon: "success",
+            draggable: true,
+          });
+        }
+      });
+  };
 
   const {
     _id,
     title,
     price_min,
     price_max,
-    email,
+    email: sellerEmail,
     category,
     created_at,
     image,
@@ -113,7 +146,7 @@ const handleSubmit = () =>{
               />
               <div>
                 <p className="font-medium">{seller_name}</p>
-                <p className="text-sm text-gray-500">{email}</p>
+                <p className="text-sm text-gray-500">{sellerEmail}</p>
               </div>
             </div>
             <p>
@@ -138,6 +171,7 @@ const handleSubmit = () =>{
             </p>
           </div>
 
+          {/* Open Modal Button */}
           <button
             onClick={handleBidModalOpen}
             className="btn btn-primary w-full mt-4"
@@ -145,7 +179,6 @@ const handleSubmit = () =>{
             I Want Buy This Product
           </button>
 
-          {/* Open the modal using document.getElementById('ID').showModal() method */}
           {/* Modal */}
           <dialog
             ref={bidModalRef}
@@ -156,7 +189,7 @@ const handleSubmit = () =>{
                 Give Seller Your Offered Price
               </h3>
 
-              <form onSubmit={handleSubmit} method="dialog" className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Buyer Name + Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
@@ -165,10 +198,10 @@ const handleSubmit = () =>{
                     </label>
                     <input
                       type="text"
-                      placeholder="Your name"
+                      name="name"
                       className="input input-bordered w-full"
                       readOnly
-                      defaultValue={user.displayName}
+                      value={user?.displayName || ""}
                     />
                   </div>
 
@@ -178,10 +211,10 @@ const handleSubmit = () =>{
                     </label>
                     <input
                       type="email"
-                      placeholder="Your email"
+                      name="email"
                       className="input input-bordered w-full"
                       readOnly
-                      defaultValue={user.email}
+                      value={user?.email || ""}
                     />
                   </div>
                 </div>
@@ -192,21 +225,22 @@ const handleSubmit = () =>{
                     <span className="label-text">Buyer Image URL</span>
                   </label>
                   <input
-                    type="url"
+                    //type="url"
                     placeholder="https://your-image-url.com"
                     className="input input-bordered w-full"
                   />
                 </div>
 
-                {/* Offered Price */}
+                {/* Bid Offered Price */}
                 <div>
                   <label className="label">
                     <span className="label-text">Place your Price</span>
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 65000"
+                    name="bid"
                     className="input input-bordered w-full"
+                    placeholder="e.g. 65000"
                   />
                 </div>
 
@@ -223,8 +257,12 @@ const handleSubmit = () =>{
                 </div>
 
                 {/* Buttons */}
-                <div className="modal-action">
-                  <button className="btn btn-outline btn-primary">
+                <div className="modal-action justify-between">
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-primary"
+                    onClick={() => bidModalRef.current.close()}
+                  >
                     Cancel
                   </button>
                   <button

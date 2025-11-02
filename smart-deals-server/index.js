@@ -94,7 +94,7 @@ async function run() {
       res.send(result);
     });
 
-    // bids related apis
+    // bids related apis > get by email
     app.get("/bids", async (req, res) => {
       const email = req.query.email;
       const query = {};
@@ -106,6 +106,15 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    //
+    app.get("/products/bids/:_id", async(req,res) =>{
+      const _id = req.params._id;
+      const query = {product: _id};
+      const cursor = bidsCollection.find(query).sort({bid_price: -1})
+      const result = await cursor.toArray()
+      res.send(result) 
+    })
 
     // create bids by POST
     app.post("/bids", async (req, res) => {

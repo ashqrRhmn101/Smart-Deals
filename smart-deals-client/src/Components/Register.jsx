@@ -1,10 +1,11 @@
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { AuthContext } from "../Provider/AuthProvider";
 import { Link, useNavigate } from "react-router";
 
 const Register = () => {
   const { setUser, createUser } = use(AuthContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -13,18 +14,28 @@ const Register = () => {
     const password = e.target.password.value;
     // console.log(email, password);
 
+      // // Reset
+    setLoading(true);
+
     // createUser
     createUser(email, password)
       .then((result) => {
         // console.log(result);
         setUser(result.user);
+        setLoading(false);
         navigate("/");
         e.target.reset();
       })
       .catch((error) => {
         console.log(error.message);
+        setLoading(false);
       });
   };
+
+  if (loading) {
+    return <h1>Loading..........</h1>;
+  }
+
 
   return (
     <div className="hero bg-base-200 min-h-screen">
@@ -50,7 +61,6 @@ const Register = () => {
                   className="input"
                   name="email"
                   placeholder="Email"
-                  readOnly
                 />
                 {/* Password */}
                 <label className="label">Password</label>
