@@ -31,7 +31,7 @@ const ProductDetails = () => {
     const email = e.target.email.value;
     const bid = e.target.bid.value;
     console.log(_id, name, email, bid);
-    // bidModalRef.current.close(); // Submit হলে modal close
+    // bidModalRef.current.close(); 
 
     const newBid = {
       product: _id,
@@ -58,6 +58,11 @@ const ProductDetails = () => {
             icon: "success",
             draggable: true,
           });
+          // add the new bid to the state
+          newBid._id = data.insertedId;
+          const newBids = [...bids, newBid];
+          newBids.sort((a, b) => b.bid_price - a.bid_price);
+          setBids(newBids);
         }
       });
   };
@@ -67,7 +72,7 @@ const ProductDetails = () => {
     title,
     price_min,
     price_max,
-    email: sellerEmail,
+    email,
     category,
     created_at,
     image,
@@ -80,6 +85,7 @@ const ProductDetails = () => {
     description,
     seller_contact,
   } = product;
+  // console.log(product)
 
   return (
     <div>
@@ -161,7 +167,7 @@ const ProductDetails = () => {
                 />
                 <div>
                   <p className="font-medium">{seller_name}</p>
-                  <p className="text-sm text-gray-500">{sellerEmail}</p>
+                  <p className="text-sm text-gray-500">{email}</p>
                 </div>
               </div>
               <p>

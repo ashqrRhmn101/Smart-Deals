@@ -1,10 +1,11 @@
 import React, { use, useState } from "react";
 import { AuthContext } from "../Provider/AuthProvider";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 const Register = () => {
   const { setUser, createUser } = use(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
 
   const handleRegister = (e) => {
@@ -14,16 +15,17 @@ const Register = () => {
     const password = e.target.password.value;
     // console.log(email, password);
 
-      // // Reset
+    // // Reset
     setLoading(true);
 
     // createUser
     createUser(email, password)
       .then((result) => {
         // console.log(result);
-        setUser(result.user);
+        setUser(result);
         setLoading(false);
-        navigate("/");
+        navigate(`${location.state ? location.state : "/"}`);
+        // navigate("/");
         e.target.reset();
       })
       .catch((error) => {
@@ -35,7 +37,6 @@ const Register = () => {
   if (loading) {
     return <h1>Loading..........</h1>;
   }
-
 
   return (
     <div className="hero bg-base-200 min-h-screen">

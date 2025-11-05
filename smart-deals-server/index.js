@@ -8,6 +8,29 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Logger Middleware
+const logger = (res, req, next) => {
+  console.log("Logging Info");
+  next();
+};
+
+//
+const verifyFireBaseToken = (req, res, next) => {
+  console.log("In the Verify :", req.headers.authorization);
+  if (!req.headers.authorization) {
+    return res.status(401).send({
+      message: "unAuthorization access",
+    });
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  if (!token) {
+    return res.status(401).send({
+      message: "unAuthorization Access",
+    });
+  }
+  next();
+};
+
 const uri =
   "mongodb+srv://smartDeals:pTVr78OqIFOeDLSV@cluster0.yaijel2.mongodb.net/?appName=Cluster0";
 
@@ -55,12 +78,12 @@ async function run() {
       res.send(result);
     });
 
-    // Get => find a single product
+    // Get => find ID single product
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       // const query = { _id: new ObjectId(id) };
       // const result = await productCollection.findOne(query);
-      const result = await productCollection.findOne({_id: id});
+      const result = await productCollection.findOne({ _id: id });
       res.send(result);
     });
 
@@ -94,8 +117,11 @@ async function run() {
       res.send(result);
     });
 
-    // bids related apis > get by email
-    app.get("/bids", async (req, res) => {
+    // bids related apis >
+    // get by email
+
+    app.get("/bids", logger, verifyFireBaseToken, async (req, res) => {
+      // console.log("header", req.headers)
       const email = req.query.email;
       const query = {};
       if (email) {
@@ -107,14 +133,21 @@ async function run() {
       res.send(result);
     });
 
-    //
-    app.get("/products/bids/:_id", async(req,res) =>{
+    // bids single product get by id
+    app.get("/products/bids/:_id", async (req, res) => {
       const _id = req.params._id;
-      const query = {product: _id};
-      const cursor = bidsCollection.find(query).sort({bid_price: -1})
-      const result = await cursor.toArray()
-      res.send(result) 
-    })
+      const query = { product: _id };
+      const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //
+    // app.get('/bids', async(req,res) =>{
+    //   const cursor = bidsCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result)
+    // })
 
     // create bids by POST
     app.post("/bids", async (req, res) => {

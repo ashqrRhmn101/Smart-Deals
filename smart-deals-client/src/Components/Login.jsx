@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../Provider/AuthProvider";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 const Login = () => {
   const { signInUser } = useContext(AuthContext);
+  const location = useLocation();
   const navigate = useNavigate();
 
   const handleSignInUser = (e) => {
@@ -14,7 +15,8 @@ const Login = () => {
     signInUser(email, password)
       .then((result) => {
         console.log(result);
-        navigate("/");
+        navigate(`${location.state ? location.state : "/"}`);
+        // navigate("/");
         e.target.reset();
       })
       .catch((error) => {
@@ -53,7 +55,10 @@ const Login = () => {
                   <button className="btn btn-neutral mt-4">Register</button>
                 </fieldset>
                 <h2 className="font-semibold">
-                  No account <Link to="/register"><span className="text-blue-500 font-bold">Register</span></Link>
+                  No account{" "}
+                  <Link to="/register">
+                    <span className="text-blue-500 font-bold">Register</span>
+                  </Link>
                 </h2>
               </form>
             </div>

@@ -13,6 +13,8 @@ import MyProducts from "./Components/MyProducts.jsx";
 import MyBids from "./Components/MyBids.jsx";
 import ProductDetails from "./Components/ProductDetails.jsx";
 import Login from "./Components/Login.jsx";
+import AllProductsCard from "./Components/AllProductsCard.jsx";
+import PrivateRouter from "./Provider/PrivateRouter.jsx";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,7 @@ const router = createBrowserRouter([
         path: "/allProduct",
         Component: AllProducts,
       },
+
       {
         path: "/register",
         Component: Register,
@@ -37,17 +40,32 @@ const router = createBrowserRouter([
       },
       {
         path: "/myProducts",
-        Component: MyProducts,
+        // Component: MyProducts,
+        element: (
+          <PrivateRouter>
+            <MyProducts />
+          </PrivateRouter>
+        ),
       },
       {
         path: "/myBids",
-        Component: MyBids,
+        // Component: MyBids,
+        element: (
+          <PrivateRouter>
+            <MyBids />
+          </PrivateRouter>
+        ),
       },
       {
         path: "/productDetails/:id",
+        element: (
+          <PrivateRouter>
+            <ProductDetails />
+          </PrivateRouter>
+        ),
         loader: ({ params }) =>
           fetch(`http://localhost:3000/products/${params.id}`),
-        Component: ProductDetails,
+        // Component: ProductDetails,
       },
     ],
   },
