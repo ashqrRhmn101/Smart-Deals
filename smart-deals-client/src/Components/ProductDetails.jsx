@@ -30,7 +30,8 @@ const ProductDetails = () => {
     const name = e.target.name.value;
     const email = e.target.email.value;
     const bid = e.target.bid.value;
-    console.log(_id, name, email, bid);
+    const phone = e.target.phone.value;
+    console.log(_id, name, email, bid,phone);
     // bidModalRef.current.close(); 
 
     const newBid = {
@@ -39,6 +40,7 @@ const ProductDetails = () => {
       buyer_email: email,
       buyer_image: user?.photoURL || "",
       bid_price: bid,
+      buyer_contact: phone,
       status: "pending",
     };
 
@@ -262,6 +264,7 @@ const ProductDetails = () => {
                       name="bid"
                       className="input input-bordered w-full"
                       placeholder="e.g. 65000"
+                      required
                     />
                   </div>
 
@@ -272,6 +275,7 @@ const ProductDetails = () => {
                     </label>
                     <input
                       type="text"
+                      name="phone"
                       placeholder="e.g. +8801711-223344"
                       className="input input-bordered w-full"
                     />
