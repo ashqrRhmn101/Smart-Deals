@@ -1,11 +1,14 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
+require("dotenv").config();
 const app = express();
 const admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
 
 const serviceAccount = require("./smart-deals-firebase-admin-key.json");
+const { UserInfo } = require("firebase-admin/auth");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -22,8 +25,8 @@ const logger = (res, req, next) => {
 };
 
 //
-const verifyFireBaseToken = (req, res, next) => {
-  console.log("In the Verify :", req.headers.authorization);
+const verifyFireBaseToken = async (req, res, next) => {
+  // console.log("In the Verify :", req.headers.authorization);
   if (!req.headers.authorization) {
     return res.status(401).send({
       message: "unAuthorization access",
@@ -35,11 +38,19 @@ const verifyFireBaseToken = (req, res, next) => {
       message: "unAuthorization Access",
     });
   }
-  next();
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+    req.token_email = userInfo.email;
+    // console.log("after token vslidation", userInfo);
+    next();
+  } catch {
+    return res.status(401).send({
+      message: "unAuthorization Access",
+    });
+  }
 };
 
-const uri =
-  "mongodb+srv://smartDeals:pTVr78OqIFOeDLSV@cluster0.yaijel2.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.yaijel2.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -61,6 +72,15 @@ async function run() {
     const db = client.db("smart_db");
     const productCollection = db.collection("products");
     const bidsCollection = db.collection("bids"); // create BIDS and catch It's
+
+    // jwt related apis
+    app.post("/getToken", (req, res) => {
+      const loggedUser = req.body;
+      const token = jwt.sign(loggedUser, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      res.send({ token: token });
+    });
 
     // Get => Find all Products
     app.get("/products", async (req, res) => {
@@ -132,6 +152,11 @@ async function run() {
       const email = req.query.email;
       const query = {};
       if (email) {
+        if (email !== req.token_email) {
+          return res.status(403).send({
+            message: "forbidden Access",
+          });
+        }
         query.buyer_email = email;
       }
 
@@ -141,7 +166,7 @@ async function run() {
     });
 
     // bids single product get by id
-    app.get("/products/bids/:_id", async (req, res) => {
+    app.get("/products/bids/:_id", verifyFireBaseToken, async (req, res) => {
       const _id = req.params._id;
       const query = { product: _id };
       const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
