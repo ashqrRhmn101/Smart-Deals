@@ -15,6 +15,7 @@ import ProductDetails from "./Components/ProductDetails.jsx";
 import Login from "./Components/Login.jsx";
 import AllProductsCard from "./Components/AllProductsCard.jsx";
 import PrivateRouter from "./Provider/PrivateRouter.jsx";
+import CreateProduct from "./Components/CreateProduct.jsx";
 
 const router = createBrowserRouter([
   {
@@ -66,6 +67,14 @@ const router = createBrowserRouter([
         loader: ({ params }) =>
           fetch(`http://localhost:3000/products/${params.id}`),
         // Component: ProductDetails,
+      },
+      {
+        path: "/createProduct",
+        element: (
+          <PrivateRouter>
+            <CreateProduct />
+          </PrivateRouter>
+        ),
       },
     ],
   },

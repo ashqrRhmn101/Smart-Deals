@@ -5,13 +5,14 @@ const MyBids = () => {
   const { user } = useContext(AuthContext);
   const [bids, setBids] = useState([]);
   
-    // console.log(user.accessToken);
+    console.log(user);
 
   useEffect(() => {
     if(user?.email){
       fetch(`http://localhost:3000/bids?email=${user.email}`,{
         headers: {
-          authorization: `Bearer ${user.accessToken}`
+          // authorization: `Bearer ${user.accessToken}`
+          authorization: `Bearer ${localStorage.getItem("token")}`
         }
       })
       .then((res) => res.json())
@@ -21,6 +22,8 @@ const MyBids = () => {
       });
     }
   }, [user?.email]);
+
+
   return (
     <div>
       <h2>My Bids : {bids.length}</h2>

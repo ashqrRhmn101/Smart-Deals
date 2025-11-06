@@ -50,6 +50,35 @@ const verifyFireBaseToken = async (req, res, next) => {
   }
 };
 
+// verifyJWTToken BID
+const verifyJWTToken = (req, res, next) => {
+  // console.log(req.headers);
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({
+      message: "unAuthorization Access",
+    });
+  }
+  const token = authorization.split(" ")[1];
+  // console.log(token);
+  if (!token) {
+    return res.status(401).send({
+      message: "unAuthorization Access",
+    });
+  }
+  // verify a token symmetric
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({
+        message: "unAuthorization Access",
+      });
+    }
+    // console.log("After decoded", decoded);
+    req.decoded = decoded;
+    next();
+  });
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.yaijel2.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -147,23 +176,44 @@ async function run() {
     // bids related apis >
     // get by email
 
-    app.get("/bids", logger, verifyFireBaseToken, async (req, res) => {
-      // console.log("header", req.headers)
+    // JWT get by LOcalStorage
+    app.get("/bids", verifyJWTToken, async (req, res) => {
+      // console.log("head", req.headers);
       const email = req.query.email;
       const query = {};
       if (email) {
-        if (email !== req.token_email) {
-          return res.status(403).send({
-            message: "forbidden Access",
-          });
-        }
         query.buyer_email = email;
       }
-
+      //verify use have access to see this data
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.send(403).send({
+          message: "forbidden access",
+        });
+      }
       const cursor = bidsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // bids related api with firebase token verify
+    // app.get("/bids", logger, verifyFireBaseToken, async (req, res) => {
+    //   // console.log("header", req.headers)
+    //   const email = req.query.email;
+    //   const query = {};
+    //   if (email) {
+    //     if (email !== req.token_email) {
+    //       return res.status(403).send({
+    //         message: "forbidden Access",
+    //       });
+    //     }
+    //     query.buyer_email = email;
+    //   }
+
+    //   const cursor = bidsCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
 
     // bids single product get by id
     app.get("/products/bids/:_id", verifyFireBaseToken, async (req, res) => {

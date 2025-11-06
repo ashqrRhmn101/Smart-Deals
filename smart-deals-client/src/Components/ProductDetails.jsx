@@ -3,25 +3,40 @@ import { useLoaderData, Link } from "react-router";
 import { useContext } from "react";
 import { AuthContext } from "../Provider/AuthProvider";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 const ProductDetails = () => {
   const product = useLoaderData();
   const bidModalRef = useRef(null);
   const { user } = useContext(AuthContext);
   const [bids, setBids] = useState([]);
+  // console.log(bids)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/products/bids/${product._id}`,{
-      headers: {
-        authorization: `Bearer ${user.accessToken}`
-      }
-    })
-      .then((res) => res.json())
+    axios
+      .get(`http://localhost:3000/products/bids/${product._id}`, {
+        headers: {
+          authorization: `Bearer ${user.accessToken}`,
+        },
+      })
       .then((data) => {
-        console.log("Bids for Products", data);
-        setBids(data);
+        console.log("After Axios Products", data.data);
+        setBids(data.data);
       });
-  }, [product._id]);
+  }, [product._id, user]);
+
+  // useEffect(() => {
+  //   fetch(`http://localhost:3000/products/bids/${product._id}`,{
+  //     headers: {
+  //       authorization: `Bearer ${user.accessToken}`
+  //     }
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log("Bids for Products", data);
+  //       setBids(data);
+  //     });
+  // }, [product._id, user]);
 
   // handleBidModalOpen
   const handleBidModalOpen = () => {
@@ -35,8 +50,8 @@ const ProductDetails = () => {
     const email = e.target.email.value;
     const bid = e.target.bid.value;
     const phone = e.target.phone.value;
-    console.log(_id, name, email, bid,phone);
-    // bidModalRef.current.close(); 
+    console.log(_id, name, email, bid, phone);
+    // bidModalRef.current.close();
 
     const newBid = {
       product: _id,
